@@ -1,0 +1,107 @@
+CalculateFeature<-function(signalPath,fs,types,wl,hop){
+   signalWave<-GetSignalWave(signalPath,fs)
+   signal<-GetSignal(signalPath,fs)
+   featCount<-0
+   for(type in types){
+      if(type=="MelFCC"){
+         featOut<-CalculaMel(signalWave,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(type=="ZCR"){
+         featOut<-CalculaZCR(signalWave,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(type=="CSH"){
+         featOut<-CalculaCSH(signalWave,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(type=="SpectralCentroid"){
+         featOut<-SpectralCentroidByWin(signal,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(type=="SpectralFlux"){
+         featOut<-SF(signal,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(type=="DOMF"){
+         featOut<-CalculaDOMF(signalWave,fs,wl,hop)
+         featCount<-featCount+1
+      }
+      if(featCount==1)
+         featOutF<-featOut
+      else
+         featOutF<-cbind(featOutF,featOut)
+   }
+   return(featOutF)
+}
+
+#Funciones Procesamiento
+
+GetSignalWave<-function(ruta,fs){
+   x<-readWave(ruta)
+   #x<-downsample(x,11025)  #creo que es usado comunmente en MPEG
+   #x<-downsample(x,22050)
+   x<-downsample(x,fs)
+
+   signalWave<-Wave(x@left+x@right,samp.rate=22050)
+   return(signalWave)
+}
+GetSignal<-function(ruta,fs){
+   x<-readWave(ruta)
+   x<-downsample(x,fs)  #creo que es usado comunmente en MPEG
+   x<-x@left+x@right
+   return(x)
+}
+
+CalculaMel<-function(signalWave,fs,wl,hop){
+   #MFCCF<-melfcc(signalWave,sr=22050,wintime=(2048/22050),hoptime=(512/22050))
+   MFCCF<-melfcc(signalWave,sr=fs,wintime=(wl/fs),hoptime=(hop/fs))
+   return(MFCCF[,1:3])
+}
+
+CalculaZCR<-function(signalWave,fs,wlen,hop){
+   #ZCRF<-zcr(signalWave,wl=2048,ovlp=75)
+   ZCRF<-zcr(signalWave,wl=wlen,ovlp=(100*(1-(hop/wlen))))
+   return(ZCRF[,2])
+}
+
+CalculaCSH<-function(signalWave,fs,wlen,hop){
+   CSHF<-csh(signalWave,wl=wlen,ovlp=(100*(1-(hop/wlen))))
+   return(CSHF[,2])
+}
+SpectralCentroidByWin<-function(x,fs,wlen,hop){
+   winSize<-wlen
+   IncS<-hop
+
+   for(i in seq(1,length(x),by=IncS)){
+      if((i+winSize)<=length(x)){
+         fx<-fft(x[i:(i+winSize)])
+         M<-Mod(fx)
+         N<-length(M)
+         SCa<-sum(M*(1:N))/sum(M)
+
+         if(i==1)
+            SC<-SCa
+         else
+            SC<-c(SC,SCa)
+      }else{
+         break
+      }
+   }
+   return(SC)
+}
+
+SF<-function(x,fs,wlen,hop){
+   a<-stft(x,win=wlen,coef=(.8*wlen),inc=hop)$values
+   res<-numeric()
+   for(m in 2:nrow(a)){
+      res[m]<- 1-sum(a[m-1,]*a[m,])/(sqrt(sum(a[m-1,]^2))*sqrt(sum(a[m,]^2)))
+      }
+   res[1]<-res[2]
+   return(res)
+   }
+
+CalculaDOMF<-function(signalWave,fs,wlen,hop){
+   DomFreqF<-dfreq(signalWave,wl=wlen,ovlp=(100*(1-(hop/wlen))))
+   return(DomFreqF[,2])
+}

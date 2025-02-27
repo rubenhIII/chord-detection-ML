@@ -1,0 +1,46 @@
+ECGMMF<-function(g,K,N,L,mu)
+   {
+   nr<-length(g)
+
+   T <- seq(min(g),max(g),length.out=K)
+
+   n <- array(0, dim=c(K,nr))
+   m <- array(0, dim=c(K,nr))
+   p <- array(0, dim=c(K,nr))
+
+   for(r in 1:nr){
+      for(k in 1:K)
+         p[k,r]<-exp(-(g[r]-T[k])^2)
+      p[,r]<-p[,r]/sum(p[,r])
+      }
+   for(i in 1:N){
+      print(i)
+      for(r in 1:nr){
+         rs<-numeric()
+         S<-0
+         if(r>1){
+            rs<-c(rs,r-1)
+            S<-S+1
+            }
+         if(r<nr){
+            rs<-c(rs,r+1)
+            S<-S+1
+            }
+
+         for(k in 1:K){
+            rc<-matrix(c(rep(k,length(rs)),rs),ncol=2)
+            n[k,r]<-L*sum(p[rc])
+            m[k,r]<-((g[r]-T[k])^2-mu)+L*S
+            }         
+
+         for(k in 1:K){
+             p[k,r]<-n[k,r]/m[k,r]+(1-sum(n[,r]/m[,r]))/sum(m[k,r]/m[,r])
+             p[k,r]<-max(0,p[k,r])
+             }
+         p[,r]<-p[,r]/sum(p[,r])
+         }
+      for(k in 1:K)
+          T[k]<-sum(g*p[k,]^2)/sum(p[k,]^2)
+      }
+   return(list(p=p,T=T))
+   }

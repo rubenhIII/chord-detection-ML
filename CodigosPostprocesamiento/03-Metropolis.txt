@@ -1,0 +1,59 @@
+Metropolis<-function(g,K,N,beta,sigma)
+   {
+   n<-length(g)
+
+   T <- seq(min(g),max(g),length.out=K)
+
+   Salida<-sample(1:K,n,replace=TRUE)
+   Pfg<-numeric(K)
+   P0<-array(0,dim=c(K,n))
+   P<-array(0,dim=c(K,n))
+
+   for(i in 1:n){
+      P0[ ,i]<-exp(-(g[i]-T[(1:K)])^2)
+      P0[ ,i]<-P0[ ,i]/sum(P0[,i])
+      }
+
+
+
+   for(k in 1:N){
+      print(k)
+      ns<-sample(1:n)
+      for(i in ns){
+         q<-Salida[i]
+         ui_q<- -((T[q]-g[i])^2)/(2*sigma^2)
+         if(i>1)
+            ui_q<-ui_q+ifelse(Salida[i-1]==q,beta,0)
+         if(i+1<=n)
+            ui_q<-ui_q+ifelse(Salida[i+1]==q,beta,0)
+         d<-ui_q
+
+         if(K==2){
+            xp<-(3-Salida[i])
+         }else{
+            xp<-sample((1:K)[-Salida[i]],1)
+            }
+
+         ui_q<- -((T[xp]-g[i])^2)/(2*sigma^2)
+         if(i>1)
+            ui_q<-ui_q+ifelse(Salida[i-1]==xp,beta,0)
+         if(i+1<=n)
+            ui_q<-ui_q+ifelse(Salida[i+1]==xp,beta,0)
+         dp<-ui_q
+
+         p<-exp(min(0,dp-d))
+
+         if(runif(1)<p)
+            Salida[i]<-xp
+         P[Salida[i],i]<-P[Salida[i],i]+1
+         }
+      for(i in 1:n){
+         P0[ ,i]<-P[ ,i]/sum(P[,i])
+         }
+
+      for(q in 1:K)
+         T[q]<-sum(g*P0[q,])/sum(P0[q,])
+      }
+
+   return(list(p=P0,T=T))
+   }

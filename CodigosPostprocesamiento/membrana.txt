@@ -1,0 +1,26 @@
+
+Membrana<-function(g,lambda,N){
+   n<-length(g)
+   Niter<-N*n
+
+   f<-g
+
+   for(k in 1:Niter){
+      print((100*k)/Niter)
+      i<-sample(1:n,1)
+      Nr<-0
+      s<-0
+      if(i>1){
+         Nr<-Nr+1
+         s<-s+f[i-1]
+         }
+      if(i+1<=n){
+         Nr<-Nr+1
+         s<-s+f[i+1]
+         }
+      f[i]<-(g[i]+lambda*s)/(1+lambda*Nr)
+      }
+
+   Salida<-f
+   return(Salida)
+   }

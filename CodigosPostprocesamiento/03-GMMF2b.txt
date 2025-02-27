@@ -1,0 +1,42 @@
+GMMF2<-function(g,N=100,L=100)
+   {
+   n<-length(g)
+
+   T <- unique(g)
+   K <- length(T)
+
+   P0<-exp(-outer(T,g,"-")^2)
+   sweep(P0, 2, colSums(P0), FUN="/")
+
+   P<-P0
+
+   for(k in 1:N){
+      print(k)
+      ns<-sample(1:n)
+      for(i in ns){
+         for(q in 1:K){
+            cont<-0
+            Nr<-0
+            s_q<-0
+            if(i>1){
+               Nr<-Nr+1
+               s_q<-s_q+P[q,i-1]
+               }
+            if(i+1<=n){
+               Nr<-Nr+1
+               s_q<-s_q+P[q,i+1]
+               }
+            P[q,i]<-(P0[q,i]+L*s_q)/(1+L*Nr)
+            }
+         }
+      }
+
+   return(list(p=P,T=T,MAP=T[apply(P,2,which.max)]))
+   }
+
+GMMF2Factor<-function(x){
+   #res<-factor(GMMF2(as.numeric(x)))
+   res<-factor(GMMF2(as.numeric(levels(x)[as.numeric(x)]))$MAP,levels(x))
+   return(res)
+}
+

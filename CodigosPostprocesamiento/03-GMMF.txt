@@ -1,0 +1,44 @@
+GMMF<-function(g,K,N,L)
+   {
+   n<-length(g)
+
+   T <- seq(min(g),max(g),length.out=K)
+
+   P0<-array(0,dim=c(K,n))
+
+   for(i in 1:n){
+      P0[ ,i]<-exp(-(g[i]-T[(1:K)])^2)
+      P0[ ,i]<-P0[ ,i]/sum(P0[,i])
+      }
+
+   P<-P0
+
+   for(k in 1:N){
+      print(k)
+      ns<-sample(1:n)
+      for(i in ns){
+         for(q in 1:K){
+            cont<-0
+            Nr<-0
+            s_q<-0
+            if(i>1){
+               Nr<-Nr+1
+               s_q<-s_q+P[q,i-1]
+               }
+            if(i+1<=n){
+               Nr<-Nr+1
+               s_q<-s_q+P[q,i+1]
+               }
+            P[q,i]<-(P0[q,i]+L*s_q)/(1+L*Nr)
+            }
+         }
+      for(q in 1:K)
+         T[q]<-sum(g*P[q,])/sum(P[q,])
+      for(i in 1:n){
+         P0[ ,i]<-exp(-(g[i]-T[(1:K)])^2)
+         P0[ ,i]<-P0[ ,i]/sum(P0[,i])
+         }
+      }
+
+   return(list(p=P,T=T))
+   }

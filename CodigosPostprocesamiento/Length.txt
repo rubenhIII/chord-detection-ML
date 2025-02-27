@@ -1,0 +1,20 @@
+
+postLengthCriterion<-function(x,n,type=1)
+   {
+   # Considerar 4 tipos: eliminar 0s,1s, 01s, 10s
+   r<-rle(x)
+   i<-which(r$lengths<=n)
+   j<-which(r$values[i]==1)
+   if(length(i[j])>0)
+      r$values[i[j]]<-1-r$values[i[j]]
+   d<-inverse.rle(r)
+
+   r<-rle(d)
+   i<-which(r$lengths<=n)
+   j<-which(r$values[i]==0)
+   if(length(i[j])>0)
+      r$values[i[j]]<- 1-r$values[i[j]]
+   d<-inverse.rle(r)
+   return(d)
+   }
+

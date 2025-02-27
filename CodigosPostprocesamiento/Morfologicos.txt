@@ -1,0 +1,49 @@
+dilation<-function(b,k)
+   {
+   n<-length(b)
+   r<-rep(0,n)
+   w<- (-k):k
+   for(i in 1:n)
+      {
+      wi<-w+i
+      wi<-wi[wi>0 & wi<=n]
+      r[i]<-max(b[wi])
+      }
+   return(r)
+   }
+
+erosion<-function(b,k)
+   {
+   n<-length(b)
+   r<-rep(0,n)
+   w<- (-k):k
+   for(i in 1:n)
+      {
+      wi<-w+i
+      wi<-wi[wi>0 & wi<=n]
+      r[i]<-min(b[wi])
+      }
+   return(r)
+   }
+
+
+
+postMorf<-function(x,k1=2,k2=2,type=1)
+   {
+   #Considerar solamente erosion, dilatacion, cerradura y apertura
+   L0<-x
+   if(type==1)
+      {
+      L1<-erosion(L0,k1)
+      L2<-dilation(L1,k1)
+      L3<-dilation(L2,k2)
+      L4<-erosion(L3,k2)
+      }else{
+      L1<-dilation(L0,k1)
+      L2<-erosion(L1,k1)
+      L3<-erosion(L2,k2)
+      L4<-dilation(L3,k2)
+      }
+  return(L4)
+  }
+

@@ -1,0 +1,61 @@
+
+#Test
+rutaT<-file.choose()
+
+myData<-read.delim(rutaT,sep="\n",header=FALSE)
+Test2<-(matrix(t(data.matrix(myData)),nrow=(dim(myData)[1])/12,ncol=12))
+
+
+#Training
+rutas<-sort(choose.files())
+
+acordes<-length(rutas)
+
+es<-numeric()
+
+ues<-numeric()
+legs<-character()
+
+
+for(k in 1:acordes){
+
+   ruta<-rutas[k]
+
+   myData<-read.delim(ruta,sep="\n",header=FALSE)
+   r<-(matrix(t(data.matrix(myData)),nrow=(dim(myData)[1])/12,ncol=12))
+
+   nr<-dim(r)[1]
+   SampNumTrain<-nr
+   mr<-sample(1:nr,SampNumTrain)
+   r<-r[mr,]
+   if(k==1){
+      rs<-r
+   }
+   else{
+      rs<-rbind(rs,r)
+   }	
+   nom<-basename(ruta)
+   partes<-unlist(strsplit(nom,".",fixed=TRUE))
+   nom<-partes[1]
+   partes<-unlist(strsplit(nom,"_"))
+   indice<-as.numeric(partes[2])+12*as.numeric(partes[3])
+   e<-rep(indice,SampNumTrain)
+   if(k==1){
+      es<-e
+   }else{
+      es<-c(es,e)
+   }
+   if(!(indice%in%ues)){
+      ues<-c(ues,indice)
+      legs<-c(legs,partes[2])
+      }
+
+   }
+
+#nT<-dim(rs)[2]
+Training2<-(rs)
+#colnames(Training)<-c(paste("v",(1:nT),sep=""))
+eTraining<-(es)
+#Test<-Test2
+#colnames(Test)<-paste("v",(1:nT),sep="")
+
